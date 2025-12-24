@@ -1,4 +1,5 @@
 version: '3'
+name: monitoring_stack
 
 volumes:
     prometheus_data: {}
@@ -17,7 +18,8 @@ services:
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
     ports:
-      - "${PROMETHEUS_PORT:-9090}:9090"
+      - "${PROMETHEUS_PORT:-9001}:9090"
+    restart: always
 
   grafana:
     image: grafana/grafana
@@ -26,7 +28,7 @@ services:
     depends_on:
       - prometheus
     ports:
-      - "${GRAFANA_PORT:-3000}:3000"
+      - "${GRAFANA_PORT:-9000}:3000"
     volumes:
       - grafana_storage:/var/lib/grafana
       - ./grafana/provisioning/:/etc/grafana/provisioning/
@@ -46,18 +48,18 @@ services:
       - --collector.filesystem.ignored-mount-points
       - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
     ports:
-      - 9100:9100
+      - "${NODE_EXPORTER_PORT:-9002}:9100"
     restart: always
        
 
   cadvisor:
-    image: google/cadvisor
+    image: gcr.io/cadvisor/cadvisor
     container_name: cadvisor
     volumes:
       - /var/run:/var/run:rw
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
     ports:
-      - "${CADVISOR_PORT:-8080}:8080"
+      - "${CADVISOR_PORT:-9003}:8080"
     restart: always
          
